@@ -90,6 +90,13 @@ contract DSCEngine {
         i_dsc = DecentralizedStableCoin(dscAddress);
     }
 
+    function healthFacor(address user) public view returns (uint256) {
+        (uint256 totalDscMinted, uint256 collateralValueInUsd) = getAccountInformation(user);
+        if (totalDscMinted == 0) return 100e10;
+        uint256 collateralAdjustedThreshold = (collateralValueInUsd * LIQUIDATION_THRESHOLD) / 100;
+        return (collateralAdjustedThreshold * 1e18) / totalDscMinted;
+    }
+
     function getAccountInformation(address user)
         public
         view
