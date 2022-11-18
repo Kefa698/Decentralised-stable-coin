@@ -99,4 +99,14 @@ contract DSCEngine {
         // We want to have everything in terms of WEI, so we add 10 zeros at the end
         return ((uint256(price) * 1e10) * amount) / 1e18;
     }
+
+    function getTokenValuFromUsd(address token, uint256 usdAmountInWei)
+        public
+        view
+        returns (uint256)
+    {
+        AggregatorV3Interface priceFeed = AggregatorV3Interface(s_TokenAddressToPriceFeed[token]);
+        (, int256 price, , , ) = priceFeed.latestRoundData();
+        return (uint256(price) * 1e10 * 1e18) / usdAmountInWei;
+    }
 }
