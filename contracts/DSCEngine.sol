@@ -90,6 +90,28 @@ contract DSCEngine {
         i_dsc = DecentralizedStableCoin(dscAddress);
     }
 
+    function getAccountInformation(address user)
+        public
+        view
+        returns (uint256 totalDscMinted, uint256 collateralValueInUsd)
+    {
+        totalDscMinted = s_userToDscMinted[user];
+        collateralValueInUsd = getAccountCollateralValue(user);
+    }
+
+    function getAccountCollateralValue(address user)
+        public
+        view
+        returns (uint256 totalCollateralValueInUsd)
+    {
+        for (uint256 i = 0; i < s_collateralTokens.length; i++) {
+            address token = s_collateralTokens[i];
+            uint256 amount = s_userToTokenAddressToAmountDeposited[user][token];
+            totalCollateralValueInUsd += getUsdValue(user, amount);
+        }
+        return totalCollateralValueInUsd;
+    }
+
     function getUsdValue(address token, uint256 amount) public view returns (uint256) {
         AggregatorV3Interface priceFeed = AggregatorV3Interface(s_TokenAddressToPriceFeed[token]);
         (, int256 price, , , ) = priceFeed.latestRoundData();
