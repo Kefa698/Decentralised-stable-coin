@@ -90,11 +90,16 @@ contract DSCEngine {
         i_dsc = DecentralizedStableCoin(dscAddress);
     }
 
-    function healthFacor(address user) public view returns (uint256) {
+    function healthFacore(address user) public view returns (uint256) {
         (uint256 totalDscMinted, uint256 collateralValueInUsd) = getAccountInformation(user);
         if (totalDscMinted == 0) return 100e10;
         uint256 collateralAdjustedThreshold = (collateralValueInUsd * LIQUIDATION_THRESHOLD) / 100;
         return (collateralAdjustedThreshold * 1e18) / totalDscMinted;
+    }
+
+    function revertIfHealthFactorIsBroken(address user) internal view {
+        uint256 userHealthFactor = healthFacore(user);
+        require(userHealthFactor >= MINIMUM_HEALTH_FACTOR, "broken healthFactor");
     }
 
     function getAccountInformation(address user)
