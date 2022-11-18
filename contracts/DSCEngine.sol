@@ -80,6 +80,7 @@ contract DSCEngine {
             tokenAdresses.length == priceFeedAddress.length,
             "priceFeedAddress and tokenAdress do not match"
         );
+
         //these pricefeed will be in usd pairs
         //like eth/usd or mkr/usd
         for (uint256 i = 0; i < tokenAdresses.length; i++) {
@@ -87,5 +88,15 @@ contract DSCEngine {
             s_collateralTokens.push(tokenAdresses[i]);
         }
         i_dsc = DecentralizedStableCoin(dscAddress);
+    }
+
+    function getUsdValue(address token, uint256 amount) public view returns (uint256) {
+        AggregatorV3Interface priceFeed = AggregatorV3Interface(s_TokenAddressToPriceFeed[token]);
+        (, int256 price, , , ) = priceFeed.latestRoundData();
+        // 1 ETH = 1000 USD
+        // The returned value from Chainlink will be 1000 * 1e8
+        // Most USD pairs have 8 decimals, so we will just pretend they all do
+        // We want to have everything in terms of WEI, so we add 10 zeros at the end
+        return ((uint256(price) * 1e10) * amount) / 1e18;
     }
 }
