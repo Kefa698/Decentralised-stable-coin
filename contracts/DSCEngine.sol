@@ -49,7 +49,7 @@ import "@openzeppelin/contracts/token/ERC20/IERC20.sol";
 import "./DecentralizedStableCoin.sol";
 import "hardhat/console.sol";
 
-contract DSCEngine {
+contract DSCEngine is ReentrancyGuard {
     uint256 public constant LIQUIDATION_THRESHOLD = 50; //you should be 200% over-collateralised
     uint256 public constant LIQUIDATION_REWARD = 10; //you get 10% discount when liquidating
     uint256 public constant MINIMUM_HEALTH_FACTOR = 1e18;
@@ -88,6 +88,13 @@ contract DSCEngine {
             s_collateralTokens.push(tokenAdresses[i]);
         }
         i_dsc = DecentralizedStableCoin(dscAddress);
+    }
+
+    function mintDsc(uint256 amountDscToMinnt) public moreThanero(amountDscToMinnt) nonReentrant {
+        s_userToDscMinted[msg.sender] += amountDscToMinnt;
+        revertIfHealthFactorIsBroken(msg.sender);
+        bool minted = i_dsc.mint(msg.sender, amountDscToMinnt);
+        require(minted == true, "mint failed");
     }
 
     function healthFacore(address user) public view returns (uint256) {
