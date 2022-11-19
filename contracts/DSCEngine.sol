@@ -62,6 +62,8 @@ contract DSCEngine is ReentrancyGuard {
     mapping(address => uint256) public s_userToDscMinted;
     address[] public s_collateralTokens;
 
+    event CollateralDeposited(address indexed user, uint256 indexed amount);
+
     modifier moreThanero(uint256 amount) {
         require(amount > 0, "amount should be more than zero");
         _;
@@ -88,6 +90,33 @@ contract DSCEngine is ReentrancyGuard {
             s_collateralTokens.push(tokenAdresses[i]);
         }
         i_dsc = DecentralizedStableCoin(dscAddress);
+    }
+
+    function depositCollateralAndMintDsc(
+        address tokenCollateralAddress,
+        uint256 amountCollateral,
+        uint256 amountDscToMint
+    ) external {
+        depositCollateral(tokenCollateralAddress, amountCollateral);
+        mintDsc(amountDscToMint);
+    }
+
+    function depositCollateral(address tokenCollateralAddress, uint256 amountCollateral)
+        public
+        isAllowedToken(tokenCollateralAddress)
+        nonReentrant
+        moreThanero(amountCollateral)
+    {
+        s_userToTokenAddressToAmountDeposited[msg.sender][
+            tokenCollateralAddress
+        ] += amountCollateral;
+        emit CollateralDeposited(msg.sender, amountCollateral);
+        bool success = IERC20(tokenCollateralAddress).transferFrom(
+            msg.sender,
+            address(this),
+            amountCollateral
+        );
+        require(success, "tranfer failed");
     }
 
     function mintDsc(uint256 amountDscToMinnt) public moreThanero(amountDscToMinnt) nonReentrant {
