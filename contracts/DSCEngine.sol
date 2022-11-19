@@ -119,6 +119,22 @@ contract DSCEngine is ReentrancyGuard {
         require(success, "tranfer failed");
     }
 
+    //Don't call this function directly, you will just lose money!
+    function burn(uint256 amountDscToBurn) public moreThanero(amountDscToBurn) nonReentrant {
+        _burn(amountDscToBurn, msg.sender, msg.sender);
+        revertIfHealthFactorIsBroken(msg.sender);
+    }
+
+    function _burn(
+        uint256 amounDscToBurn,
+        address onBehalfOf,
+        address DscFrom
+    ) private {
+        s_userToDscMinted[onBehalfOf] -= amounDscToBurn;
+        bool success = i_dsc.transferFrom(DscFrom, address(this), amounDscToBurn);
+        require(success, "transfer failed");
+    }
+
     function mintDsc(uint256 amountDscToMinnt) public moreThanero(amountDscToMinnt) nonReentrant {
         s_userToDscMinted[msg.sender] += amountDscToMinnt;
         revertIfHealthFactorIsBroken(msg.sender);
