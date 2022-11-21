@@ -128,6 +128,15 @@ contract DSCEngine is ReentrancyGuard {
         revertIfHealthFactorIsBroken(msg.sender);
     }
 
+    function redeemCollateralForDcs(
+        address tokenCollateralAddress,
+        uint256 amountCollateral,
+        uint256 amountDscToBurn
+    ) external {
+        burn(amountDscToBurn);
+        redeemCollateral(tokenCollateralAddress, amountCollateral);
+    }
+
     function _redeemCollateral(
         address tokenCollateralAddress,
         uint256 amountCollateral,
