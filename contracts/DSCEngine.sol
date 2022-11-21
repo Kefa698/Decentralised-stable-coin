@@ -1,46 +1,4 @@
 // Based VEEEEEEEEEEERY LOOSELY on the MakerDAO DSS System (Dsc)
-// Also has some Aave mixed in
-
-/////////////////////////////////////////////////
-/******  We are ignoring the following modules: *********/
-// System Stabilizer: We are pretending that our liquidation model is good enough
-// (It's definetly not)
-// https://docs.makerdao.com/smart-contract-modules/system-stabilizer-module
-
-// Oracle Module:
-// We use Chainlink instead
-// https://docs.makerdao.com/smart-contract-modules/oracle-module
-
-// MKR Module:
-// The MKR Module is for governance and a backstop against becoming insolvent.
-// This is crucial for production
-// https://docs.makerdao.com/smart-contract-modules/mkr-module
-
-// Governance Module:
-// See above
-// https://docs.makerdao.com/smart-contract-modules/governance-module
-
-// Rates Module:
-// We are removing the rates module because we don't have governance
-// We could include it more protection against insolvency, but we are going to pretend (again) that our liquidation thresholds are high enough
-// https://docs.makerdao.com/smart-contract-modules/rates-module
-
-// Flash Mint Module
-// Not necesary
-// https://docs.makerdao.com/smart-contract-modules/flash-mint-module
-
-// Emergency Shutdown Module:
-// Because
-// https://docs.makerdao.com/smart-contract-modules/shutdown
-/////////////////////////////////////////////////
-
-/////////////////////////////////////////////////
-/******  Included Modules: *********/
-
-// Core Module
-// Collateral Module (but wrapped into one contract)
-// Liquidation Module (but wrapped into one contract)
-
 // SPDX-License-Identifier: MIT
 
 pragma solidity ^0.8.7;
@@ -103,7 +61,7 @@ contract DSCEngine is ReentrancyGuard {
             s_tokenAddressToPriceFeed[tokenAddresses[i]] = priceFeedAddresses[i];
             s_collateralTokens.push(tokenAddresses[i]);
         }
-        // i_dsc = new DecentralizedStableCoin();
+
         i_dsc = DecentralizedStableCoin(dscAddress);
     }
 
@@ -283,4 +241,3 @@ contract DSCEngine is ReentrancyGuard {
         require(startingUserHealthFactor < endingUserHealthFactor);
     }
 }
-
