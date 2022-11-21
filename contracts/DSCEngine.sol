@@ -119,7 +119,14 @@ contract DSCEngine is ReentrancyGuard {
         require(success, "tranfer failed");
     }
 
-    
+    function redeemCollateral(address tokenCollateralAddress, uint256 amountCollateral)
+        public
+        moreThanero(amountCollateral)
+        nonReentrant
+    {
+        _redeemCollateral(tokenCollateralAddress, amountCollateral, msg.sender, msg.sender);
+        revertIfHealthFactorIsBroken(msg.sender);
+    }
 
     function _redeemCollateral(
         address tokenCollateralAddress,
