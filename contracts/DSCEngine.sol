@@ -119,6 +119,19 @@ contract DSCEngine is ReentrancyGuard {
         require(success, "tranfer failed");
     }
 
+    
+
+    function _redeemCollateral(
+        address tokenCollateralAddress,
+        uint256 amountCollateral,
+        address from,
+        address to
+    ) private {
+        s_userToTokenAddressToAmountDeposited[from][tokenCollateralAddress] -= amountCollateral;
+        bool success = IERC20(tokenCollateralAddress).transfer(to, amountCollateral);
+        require(success, "transfer failed");
+    }
+
     //Don't call this function directly, you will just lose money!
     function burn(uint256 amountDscToBurn) public moreThanero(amountDscToBurn) nonReentrant {
         _burn(amountDscToBurn, msg.sender, msg.sender);
