@@ -5,8 +5,6 @@
 // Value (Relative Stability): Anchored (Pegged to USD)
 // Collateral Type: Crypto
 
-// ExoDRCCoin... Which I'm going to call ExoDaCCoin... ExoDac?
-
 // Sometimes refered to just as "Crypto Collateralized Stablecoin" or "Decentralized Stablecoin"
 
 pragma solidity ^0.8.7;
