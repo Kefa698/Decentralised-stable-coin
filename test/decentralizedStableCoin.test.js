@@ -24,8 +24,8 @@ const { developmentChains } = require("../helper-hardhat-config")
           })
 
           it("can be minted with deposited collateral", async function () {
-              const amountCollateral = ethers.utils.parseEther("10") // Price Starts off at $1,000
-              const amountToMint = ethers.utils.parseEther("100") // $100 minted with $10,000 collateral
+              const amountCollateral = ethers.utils.parseEther("10")
+              const amountToMint = ethers.utils.parseEther("100")
               await weth.approve(dscEngine.address, amountCollateral)
               await dscEngine.depositCollateralAndMintDsc(
                   weth.address,
@@ -51,4 +51,22 @@ const { developmentChains } = require("../helper-hardhat-config")
 
               assert(await decentralizedStableCoin.balanceOf(dscEngine.address), "0")
           })
+
+          it("healthFactor", async function () {
+              const amountCollateral = ethers.utils.parseEther("10")
+              const amountToMint = ethers.utils.parseEther("100")
+              await weth.approve(dscEngine.address, amountCollateral)
+
+              await dscEngine.depositCollateralAndMintDsc(
+                  weth.address,
+                  amountCollateral,
+                  amountToMint
+              )
+              const healthFactor = await dscEngine.healthFactor(deployer.address)
+               // $100 minted with $10,000 collateral at a 50% liquidation threshold means that
+              // We must have be 200% collateral at all times
+              // Which means, 10,000 / 200 = 50 health factor
+              assert.equal(ethers.utils.formatEther(healthFactor.toString()),"50.0")
+          })
+
       })
