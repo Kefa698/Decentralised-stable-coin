@@ -63,10 +63,44 @@ const { developmentChains } = require("../helper-hardhat-config")
                   amountToMint
               )
               const healthFactor = await dscEngine.healthFactor(deployer.address)
-               // $100 minted with $10,000 collateral at a 50% liquidation threshold means that
+              // $100 minted with $10,000 collateral at a 50% liquidation threshold means that
               // We must have be 200% collateral at all times
               // Which means, 10,000 / 200 = 50 health factor
-              assert.equal(ethers.utils.formatEther(healthFactor.toString()),"50.0")
+              assert.equal(ethers.utils.formatEther(healthFactor.toString()), "50.0")
           })
+          it("liquidates", async function () {
+              const amountCollateral = ethers.utils.parseEther("10")
+              const amountToMint = ethers.utils.parseEther("100")
+              await weth.approve(dscEngine.address, amountCollateral)
 
+              await dscEngine.depositCollateralAndMintDsc(
+                  weth.address,
+                  amountCollateral,
+                  amountToMint
+              )
+              const ethUsdUpdatedPrice = ethers.utils.parseUnits("18", "8")
+              const updateTx = await ethUsdPriceFeed.updateAnswer(ethUsdUpdatedPrice)
+              updateTx.wait(1)
+              const healthFactor = (await dscEngine.healthFactor(deployer.address)).toString()
+              assert.equal(ethers.utils.formatEther(healthFactor), "0.9")
+
+              ///giving liquidator some Dsc
+              const moreCollateral = ethers.utils.parseEther("1000")
+              await weth.transfer(liquidator.address, moreCollateral)
+              const liquidatorConnectedWeth = await weth.connect(liquidator)
+              const liquidatorConnectedDsce = await dscEngine.connect(liquidator)
+              const liquidatorConnectedDsc = await decentralizedStableCoin.connect(liquidator)
+
+             await liquidatorConnectedWeth.approve(dscEngine.address, moreCollateral)
+              await liquidatorConnectedDsce.depositCollateralAndMintDsc(
+                  weth.address,
+                  moreCollateral,
+                  amountToMint
+              )
+
+              const balance = await decentralizedStableCoin.balanceOf(liquidator.address)
+              assert.equal(balance.toString(), amountToMint.toString())
+              await liquidatorConnectedDsc.approve(dscEngine.address, amountToMint)
+              await liquidatorConnectedDsce.liquidate(weth.address, deployer.address, amountToMint)
+          })
       })
